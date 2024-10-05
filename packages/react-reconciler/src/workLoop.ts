@@ -45,7 +45,7 @@ import { SuspenseException, getSuspenseThenable } from './thenable';
 import { unwindWork } from './fiberUnwindWork';
 import { resetHooksOnUnwind } from './fiberHooks';
 
-let workInProgress: FiberNode | null = null;
+let workInProgress: FiberNode | null = null; // 正在执行更新工作的树
 let wipRootRenderLane: Lane = NoLane;
 let rootDoesHasPassiveEffects = false;
 
@@ -252,6 +252,7 @@ function performSyncWorkOnRoot(root: FiberRootNode) {
 
 let c = 0;
 
+// 整体的渲染方法
 function renderRoot(root: FiberRootNode, lane: Lane, shouldTimeSlice: boolean) {
 	if (__DEV__) {
 		console.log(`开始${shouldTimeSlice ? '并发' : '同步'}更新`, root);
@@ -259,6 +260,7 @@ function renderRoot(root: FiberRootNode, lane: Lane, shouldTimeSlice: boolean) {
 
 	if (wipRootRenderLane !== lane) {
 		// 初始化
+		// 让 workInProgress 树指向我们需要遍历的第一个 FiberNode 节点
 		prepareFreshStack(root, lane);
 	}
 
@@ -389,6 +391,7 @@ function flushPassiveEffects(pendingPassiveEffects: PendingPassiveEffects) {
 }
 
 function workLoopSync() {
+	// 只要 workInProgress 树不为空，就一直循环
 	while (workInProgress !== null) {
 		performUnitOfWork(workInProgress);
 	}
@@ -400,12 +403,14 @@ function workLoopConcurrent() {
 }
 
 function performUnitOfWork(fiber: FiberNode) {
-	const next = beginWork(fiber, wipRootRenderLane);
-	fiber.memoizedProps = fiber.pendingProps;
+	const next = beginWork(fiber, wipRootRenderLane); // next 可能是 fiber 的子 fiber，则继续往下遍历；也可能是 null，就停止遍历
+	fiber.memoizedProps = fiber.pendingProps; // 先缓存
 
 	if (next === null) {
+		// fiber 为 null 了，就停止遍历，开始“归”的过程
 		completeUnitOfWork(fiber);
 	} else {
+		// 如果 fiber 子节点不是 null，就继续往下遍历
 		workInProgress = next;
 	}
 }
@@ -414,6 +419,7 @@ function completeUnitOfWork(fiber: FiberNode) {
 	let node: FiberNode | null = fiber;
 
 	do {
+		// 此时是没有子节点的情况了，所以检查遍历兄弟节点
 		completeWork(node);
 		const sibling = node.sibling;
 
@@ -421,6 +427,7 @@ function completeUnitOfWork(fiber: FiberNode) {
 			workInProgress = sibling;
 			return;
 		}
+		// 如果没有兄弟节点了，则往上归，此时取的就是父亲节点
 		node = node.return;
 		workInProgress = node;
 	} while (node !== null);

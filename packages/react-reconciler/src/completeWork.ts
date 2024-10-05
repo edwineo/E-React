@@ -1,3 +1,4 @@
+// 整个文件是递归遍历节点中的“归”阶段
 import {
 	appendInitialChild,
 	Container,

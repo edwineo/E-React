@@ -59,15 +59,15 @@ export class FiberNode {
 		this.tag = tag;
 		this.key = key || null;
 		// HostComponent <div> div DOM
-		this.stateNode = null;
+		this.stateNode = null; // 保存的是 div 这个 DOM
 		// FunctionComponent () => {}
-		this.type = null;
+		this.type = null; // FiberNode 的类型
 
 		// 构成树状结构
-		this.return = null;
-		this.sibling = null;
-		this.child = null;
-		this.index = 0;
+		this.return = null; // 当子节点工作单元完成后，就应该到了父节点工作单元来完成，这个 return 的内容就是指向父 FiberNode
+		this.sibling = null; // 指向兄弟 FiberNode
+		this.child = null; // 指向子 FiberNode
+		this.index = 0; // 子节点顺序
 
 		this.ref = null;
 
@@ -77,9 +77,9 @@ export class FiberNode {
 		this.memoizedState = null;
 		this.updateQueue = null;
 
-		this.alternate = null;
+		this.alternate = null; // 该字段用于在两颗 FiberNode 树之间切换时来指向，current 树的 alternate 指向 workInProgress 树，workInProgress 树的 alternate 指向 current 树
 		// 副作用
-		this.flags = NoFlags;
+		this.flags = NoFlags; // 副作用的标识
 		this.subtreeFlags = NoFlags;
 		this.deletions = null;
 

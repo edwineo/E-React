@@ -1,4 +1,4 @@
-export type WorkTag =
+export type WorkTag = // 整体的 tag
 	| typeof FunctionComponent
 	| typeof HostRoot
 	| typeof HostComponent
@@ -13,9 +13,8 @@ export type WorkTag =
 export const FunctionComponent = 0;
 export const HostRoot = 3;
 
-export const HostComponent = 5;
-// <div>123</div>
-export const HostText = 6;
+export const HostComponent = 5; // <div> 标签对应的就是 HostComponent
+export const HostText = 6; // div 下面的文本，例如 <div>123</div>
 export const Fragment = 7;
 export const ContextProvider = 8;
 

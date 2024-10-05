@@ -1,3 +1,4 @@
+// 整个文件是递归遍历节点中的“递”阶段
 import { ReactElementType } from 'shared/ReactTypes';
 import { mountChildFibers, reconcileChildFibers } from './childFibers';
 import {
