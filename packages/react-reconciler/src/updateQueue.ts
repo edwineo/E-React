@@ -18,6 +18,7 @@ export interface UpdateQueue<State> {
 	dispatch: Dispatch<State> | null;
 }
 
+// 创建一个 update 实例的方法
 export const createUpdate = <State>(
 	action: Action<State>,
 	lane: Lane,
@@ -33,6 +34,7 @@ export const createUpdate = <State>(
 	};
 };
 
+// 创建 updateQueue 的方法
 export const createUpdateQueue = <State>() => {
 	return {
 		shared: {
@@ -42,6 +44,7 @@ export const createUpdateQueue = <State>() => {
 	} as UpdateQueue<State>;
 };
 
+// 将 update 实例插入到 updateQueue 中的方法
 export const enqueueUpdate = <State>(
 	updateQueue: UpdateQueue<State>,
 	update: Update<State>,
@@ -80,6 +83,7 @@ export function basicStateReducer<State>(
 	}
 }
 
+// 消费 update 的方法
 export const processUpdateQueue = <State>(
 	baseState: State,
 	pendingUpdate: Update<State> | null,
@@ -90,6 +94,7 @@ export const processUpdateQueue = <State>(
 	baseState: State;
 	baseQueue: Update<State> | null;
 } => {
+	// 最终的结果
 	const result: ReturnType<typeof processUpdateQueue<State>> = {
 		memoizedState: baseState,
 		baseState,
@@ -97,6 +102,7 @@ export const processUpdateQueue = <State>(
 	};
 
 	if (pendingUpdate !== null) {
+		// 这里是消费的过程实现
 		// 第一个update
 		const first = pendingUpdate.next;
 		let pending = pendingUpdate.next as Update<any>;
@@ -138,6 +144,7 @@ export const processUpdateQueue = <State>(
 				if (pending.hasEagerState) {
 					newState = pending.eagerState;
 				} else {
+					// basicStateReducer 中会根据 action 有两种情况进行处理
 					newState = basicStateReducer(baseState, action);
 				}
 			}
