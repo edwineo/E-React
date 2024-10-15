@@ -95,8 +95,9 @@ export interface PendingPassiveEffects {
 	update: Effect[];
 }
 
+// 状态更新机制中的 根节点
 export class FiberRootNode {
-	container: Container;
+	container: Container; // rootElement 节点，对于 DOM 环境来说，这里就是 DOM Element，对于其他宿主环境来说，这里就对应是其他节点
 	current: FiberNode;
 	finishedWork: FiberNode | null;
 	pendingLanes: Lanes;
@@ -132,28 +133,37 @@ export class FiberRootNode {
 	}
 }
 
+// 将 fiberRootNode 处理成 WorkInProgress
 export const createWorkInProgress = (
 	current: FiberNode,
 	pendingProps: Props
 ): FiberNode => {
+	// 每次传进来一个 fiberRootNode，经过一顿操作之后返回这个 fiberRootNode 的 alternate
+	// 就相当于双缓冲机制中，我每次都获取到跟我相对应的那个 FiberNode
 	let wip = current.alternate;
+	// 什么情况下等于 null？首屏渲染时（mount）
+	// 当是下次更新时（update），这里的 workInProgress 就有值了
 	if (wip === null) {
 		// mount
 		wip = new FiberNode(current.tag, pendingProps, current.key);
 		wip.stateNode = current.stateNode;
 
+		// 相互指向
 		wip.alternate = current;
 		current.alternate = wip;
 	} else {
 		// update
 		wip.pendingProps = pendingProps;
+		// 去除副作用
 		wip.flags = NoFlags;
 		wip.subtreeFlags = NoFlags;
 		wip.deletions = null;
 	}
 	wip.type = current.type;
+	// 这里 updateQueue 中的数据结构是 shared.pending，这样在 workInProgress 与 current 树中就可以共用同一个 updateQueue 了
 	wip.updateQueue = current.updateQueue;
 	wip.child = current.child;
+	// memoizedProps 是更新完之后的新的 state
 	wip.memoizedProps = current.memoizedProps;
 	wip.memoizedState = current.memoizedState;
 	wip.ref = current.ref;

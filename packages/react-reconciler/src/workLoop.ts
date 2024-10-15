@@ -76,9 +76,12 @@ let workInProgressThrownValue: any = null;
 
 // TODO 执行过程中报错了
 
+// 让 workInProgress 树指向我们需要遍历的第一个 FiberNode 节点
 function prepareFreshStack(root: FiberRootNode, lane: Lane) {
+	// 这里的第一个入参一定是 fiberRootNode 而不是普通的 fiberNode
 	root.finishedLane = NoLane;
 	root.finishedWork = null;
+	// 而 fiberRootNode 不能像普通的 fiberNode 一样拿来直接当 workInProgress，需要进一步处理一下，所以用到了 createWorkInProgress 方法
 	workInProgress = createWorkInProgress(root.current, {});
 	wipRootRenderLane = lane;
 
@@ -87,9 +90,15 @@ function prepareFreshStack(root: FiberRootNode, lane: Lane) {
 	workInProgressThrownValue = null;
 }
 
+// 将 fiberReconciler 文件中的触发更新相关的流程，接入到 workLoop 中
+// 名称意思是：在 Fiber 中调度 update
 export function scheduleUpdateOnFiber(fiber: FiberNode, lane: Lane) {
 	// fiberRootNode
+	// 对于首屏渲染，传入的是 hostRootFiber，对于后续 setState 更新，传入的就是 classComponent 对应的 fiber
+
+	// 先拿到 fiberRootNode
 	const root = markUpdateLaneFromFiberToRoot(fiber, lane);
+	// 从 fiberRootNode 开始我们的更新流程
 	markRootUpdated(root, lane);
 	ensureRootIsScheduled(root);
 }
@@ -150,10 +159,13 @@ export function markRootUpdated(root: FiberRootNode, lane: Lane) {
 	root.pendingLanes = mergeLanes(root.pendingLanes, lane);
 }
 
+// 从当前 fiber 向上遍历到根节点
 export function markUpdateLaneFromFiberToRoot(fiber: FiberNode, lane: Lane) {
-	let node = fiber;
-	let parent = node.return;
+	let node = fiber; // 当前节点
+	let parent = node.return; // 父节点
+	// 当 node.return 为 null 时，就表明当前节点是一个普通的 FiberNode，而不是 hostRootFiber（这个节点只通过 stateNode 来指向父亲节点 FiberRootNode）
 	while (parent !== null) {
+		// 普通的 fiberNode，则将其赋值为它的父亲，然后将其父节点，赋值为父亲的父亲，依次往上
 		parent.childLanes = mergeLanes(parent.childLanes, lane);
 		const alternate = parent.alternate;
 		if (alternate !== null) {
@@ -163,6 +175,7 @@ export function markUpdateLaneFromFiberToRoot(fiber: FiberNode, lane: Lane) {
 		node = parent;
 		parent = node.return;
 	}
+	// 如果跳出了上述循环，则表明到了 hostRootFiber 这一步，则直接返回它的 stateNode，也就是父节点
 	if (node.tag === HostRoot) {
 		return node.stateNode;
 	}
