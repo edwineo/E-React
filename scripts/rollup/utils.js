@@ -22,6 +22,7 @@ export function getPackageJSON(pkgName) {
 	return JSON.parse(str);
 }
 
+// 为开发环境增加 __DEV__ 标识，方便 dev 包打印更多信息
 export function getBaseRollupPlugins({
 	alias = {
 		__DEV__: true,

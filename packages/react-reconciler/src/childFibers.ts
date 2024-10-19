@@ -11,6 +11,7 @@ import { Fragment, HostText } from './workTags';
 
 type ExistingChildren = Map<string | number, FiberNode>;
 
+// 构建离屏 DOM 树
 function ChildReconciler(shouldTrackEffects: boolean) {
 	function deleteChild(returnFiber: FiberNode, childToDelete: FiberNode) {
 		if (!shouldTrackEffects) {
