@@ -215,6 +215,7 @@ function updateFragment(wip: FiberNode) {
 	return wip.child;
 }
 
+// FC 的核心方法
 function updateFunctionComponent(
 	wip: FiberNode,
 	Component: FiberNode['type'],
@@ -315,23 +316,29 @@ function updateSuspenseComponent(workInProgress: FiberNode) {
 	pushSuspenseHandler(workInProgress);
 
 	if (current === null) {
+		// mount
 		if (showFallback) {
+			// 挂起
 			return mountSuspenseFallbackChildren(
 				workInProgress,
 				nextPrimaryChildren,
 				nextFallbackChildren
 			);
 		} else {
+			// 正常
 			return mountSuspensePrimaryChildren(workInProgress, nextPrimaryChildren);
 		}
 	} else {
+		// update
 		if (showFallback) {
+			// 挂起
 			return updateSuspenseFallbackChildren(
 				workInProgress,
 				nextPrimaryChildren,
 				nextFallbackChildren
 			);
 		} else {
+			// 正常
 			return updateSuspensePrimaryChildren(workInProgress, nextPrimaryChildren);
 		}
 	}

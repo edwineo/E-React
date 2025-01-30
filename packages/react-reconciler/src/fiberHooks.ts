@@ -39,6 +39,8 @@ function readContext<Value>(context: ReactContext<Value>): Value {
 	const consumer = currentlyRenderingFiber as FiberNode;
 	return readContextOrigin(consumer, context);
 }
+
+// 所有 hooks 对象的数据结构
 interface Hook {
 	memoizedState: any;
 	updateQueue: unknown;
